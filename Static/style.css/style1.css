@@ -1,0 +1,25 @@
+body{
+font-family: Arial;
+text-align:center;
+background: linear-gradient(#d4fc79,#96e6a1);
+}
+
+form{
+background:white;
+padding:30px;
+margin:50px auto;
+width:300px;
+border-radius:10px;
+}
+
+input,select{
+width:80%;
+padding:8px;
+margin:5px;
+}
+
+button{
+background:green;
+color:white;
+padding:10px;
+}
