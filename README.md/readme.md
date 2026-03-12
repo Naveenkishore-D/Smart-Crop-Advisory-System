@@ -1,2 +1,0 @@
-Smart Crop Advisory System is a web-based application that helps farmers choose the most suitable crop based on soil type and environmental conditions. The system analyzes input data such as soil type, temperature, and rainfall and recommends the best crop for cultivation.
-This system helps farmers make better agricultural decisions and improve productivity by using simple technology.
