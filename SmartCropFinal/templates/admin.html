@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body style="background:var(--bg)">
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <div class="admin-brand">🌱 KisanAI Admin</div>
+    <nav>
+      <a href="#overview"     class="admin-nav-link active">📊 Overview</a>
+      <a href="#predictions"  class="admin-nav-link">🌾 Predictions</a>
+      <a href="#farmers"      class="admin-nav-link">👨‍🌾 Farmers</a>
+      <a href="#crop-dist"    class="admin-nav-link">📈 Crop Stats</a>
+    </nav>
+    <div style="position:absolute;bottom:1.5rem;left:1.5rem;right:1.5rem">
+      <a href="/admin/logout" class="btn btn-sm btn-block" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.2);margin-bottom:.5rem">🚪 Logout</a>
+      <a href="/dashboard" class="admin-nav-link" style="justify-content:center;font-size:.78rem;opacity:.6">← Farmer View</a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="admin-content">
+    <div class="flex-between mb-3">
+      <div>
+        <h1 style="font-family:var(--fd);font-size:1.85rem;color:var(--g2)">Admin Dashboard</h1>
+        <p style="color:var(--text3);font-size:.88rem">Complete system overview</p>
+      </div>
+      <span class="badge badge-green" style="font-size:.8rem">👤 Admin</span>
+    </div>
+
+    <!-- Stats -->
+    <div id="overview" class="stats-grid fade-up">
+      <div class="stat-card"><div class="stat-icon green">👨‍🌾</div><div class="stat-info"><h3 data-count="{{ total_farmers }}">0</h3><p>Registered Farmers</p></div></div>
+      <div class="stat-card"><div class="stat-icon gold">🌾</div><div class="stat-info"><h3 data-count="{{ total_predictions }}">0</h3><p>Total Predictions</p></div></div>
+      <div class="stat-card"><div class="stat-icon blue">🌱</div><div class="stat-info"><h3>{{ crop_dist|length }}</h3><p>Crops Predicted</p></div></div>
+      <div class="stat-card"><div class="stat-icon earth">🎯</div><div class="stat-info"><h3>96%</h3><p>Model Accuracy</p></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+      <!-- Crop Distribution -->
+      <div class="card fade-up d1" id="crop-dist">
+        <div class="card-head"><h3>📈 Crop Distribution</h3></div>
+        <div class="card-body">
+          {% if crop_dist %}
+            {% for row in crop_dist %}
+            <div class="top-crop" style="margin-bottom:.85rem">
+              <div class="top-crop-label">
+                <span class="crop-name" style="text-transform:capitalize">{{ row.predicted_crop }}</span>
+                <span style="font-weight:800;color:var(--g3)">{{ row.count }}</span>
+              </div>
+              <div class="prog-track">
+                <div class="prog-fill" data-width="{{ (row.count / total_predictions * 100)|int if total_predictions else 0 }}" style="width:0%"></div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="empty-state" style="padding:1.5rem"><div class="ico" style="font-size:2rem">📊</div><p>No predictions yet</p></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Farmer List -->
+      <div class="card fade-up d2" id="farmers">
+        <div class="card-head"><h3>👨‍🌾 Registered Farmers</h3><span class="badge badge-blue">{{ total_farmers }}</span></div>
+        <div style="max-height:380px;overflow-y:auto">
+          {% if all_farmers %}
+          <table class="hist-table">
+            <thead><tr><th>Name</th><th>Location</th><th>Predictions</th><th>Joined</th></tr></thead>
+            <tbody>
+              {% for f in all_farmers %}
+              <tr>
+                <td><div style="font-weight:800;font-size:.85rem">{{ f.name }}</div><div style="font-size:.74rem;color:var(--text3)">{{ f.email }}</div></td>
+                <td style="font-size:.82rem;color:var(--text2)">{{ f.location or '—' }}</td>
+                <td><span class="badge badge-green">{{ f.pred_count }}</span></td>
+                <td style="font-size:.76rem;color:var(--text3)">{{ f.created_at[:10] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state" style="padding:2rem">No farmers yet</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- All Predictions -->
+    <div class="card fade-up d3" id="predictions">
+      <div class="card-head"><h3>🌾 All Predictions</h3><span class="badge badge-green">{{ total_predictions }}</span></div>
+      <div style="overflow-x:auto">
+        {% if all_predictions %}
+        <table class="hist-table">
+          <thead><tr><th>#</th><th>Farmer</th><th>Crop</th><th>N-P-K</th><th>pH</th><th>Rain</th><th>Temp</th><th>Humidity</th><th>Confidence</th><th>Location</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for p in all_predictions %}
+            <tr>
+              <td class="text-muted" style="font-size:.78rem">{{ loop.index }}</td>
+              <td style="font-weight:700;font-size:.85rem">{{ p.farmer_name }}</td>
+              <td><span class="crop-pill">{{ p.emoji }} {{ p.predicted_crop }}</span></td>
+              <td style="font-weight:700;font-size:.82rem">{{ p.nitrogen|int }}-{{ p.phosphorus|int }}-{{ p.potassium|int }}</td>
+              <td>{{ p.ph }}</td>
+              <td style="font-size:.82rem">{{ p.rainfall }}mm</td>
+              <td style="font-size:.82rem">{{ p.temperature }}°C</td>
+              <td style="font-size:.82rem">{{ p.humidity }}%</td>
+              <td><span class="badge badge-green">{{ p.confidence }}%</span></td>
+              <td class="text-muted" style="font-size:.78rem">{{ p.location or '—' }}</td>
+              <td class="text-muted" style="font-size:.76rem;white-space:nowrap">{{ p.predicted_at[:16] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" style="padding:2rem">No predictions yet</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

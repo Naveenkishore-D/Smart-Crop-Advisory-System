@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>History — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/dashboard" class="nav-brand">🌱 KisanAI</a>
+    <ul class="nav-links">
+      <li><a href="/dashboard" class="nav-link">🏠 Dashboard</a></li>
+      <li><a href="/predict"   class="nav-link">🔬 Predict Crop</a></li>
+      <li><a href="/history"   class="nav-link active">📜 History</a></li>
+    </ul>
+    <div class="nav-user">
+      <a href="/logout" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff">Logout</a>
+    </div>
+  </div>
+</nav>
+<div class="page">
+  <div class="page-head flex-between fade-up">
+    <div>
+      <h1>📜 Prediction History</h1>
+      <p>All your crop recommendations — {{ predictions|length }} total record(s)</p>
+    </div>
+    <a href="/predict" class="btn btn-primary">+ New Prediction</a>
+  </div>
+
+  {% if predictions %}
+  <div class="stats-grid fade-up d1" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem">
+    <div class="stat-card">
+      <div class="stat-icon green">📊</div>
+      <div class="stat-info"><h3 data-count="{{ predictions|length }}">0</h3><p>Total Predictions</p></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon gold">🌾</div>
+      <div class="stat-info">
+        <h3>{{ predictions|map(attribute='predicted_crop')|list|unique|list|length }}</h3>
+        <p>Unique Crops</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">🎯</div>
+      <div class="stat-info">
+        <h3>{{ (predictions|map(attribute='confidence')|list|sum / predictions|length)|round(1) }}%</h3>
+        <p>Avg Confidence</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-up d2">
+    <div class="card-head">
+      <h3>📋 All Predictions</h3>
+      <span class="badge badge-green">{{ predictions|length }} records</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="hist-table">
+        <thead><tr>
+          <th>#</th><th>Crop</th><th>Season</th>
+          <th>N</th><th>P</th><th>K</th><th>pH</th>
+          <th>Rain(mm)</th><th>Temp(°C)</th><th>Humidity</th>
+          <th>Confidence</th><th>Location</th><th>Date</th>
+        </tr></thead>
+        <tbody>
+          {% for p in predictions %}
+          <tr>
+            <td class="text-muted" style="font-size:.78rem">{{ loop.index }}</td>
+            <td><span class="crop-pill">{{ p.emoji }} {{ p.predicted_crop }}</span></td>
+            <td><span class="badge badge-blue">{{ p.season }}</span></td>
+            <td style="font-weight:700">{{ p.nitrogen|int }}</td>
+            <td style="font-weight:700">{{ p.phosphorus|int }}</td>
+            <td style="font-weight:700">{{ p.potassium|int }}</td>
+            <td>{{ p.ph }}</td>
+            <td>{{ p.rainfall }}</td>
+            <td>{{ p.temperature }}°</td>
+            <td>{{ p.humidity }}%</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:.4rem">
+                <div style="flex:1;height:6px;background:var(--g7);border-radius:99px;overflow:hidden;min-width:45px">
+                  <div style="height:100%;background:var(--g3);width:{{ p.confidence }}%;border-radius:99px"></div>
+                </div>
+                <span style="font-size:.78rem;font-weight:800;color:var(--g2)">{{ p.confidence }}%</span>
+              </div>
+            </td>
+            <td class="text-muted" style="font-size:.78rem">{{ p.location or '—' }}</td>
+            <td class="text-muted" style="font-size:.78rem;white-space:nowrap">{{ p.predicted_at[:10] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state fade-up">
+    <div class="ico">🌱</div>
+    <h3>No predictions yet</h3>
+    <p>Get your first AI-powered crop recommendation by entering your soil data!</p>
+    <a href="/predict" class="btn btn-primary btn-lg" style="margin-top:1rem">🔬 Get Crop Recommendation</a>
+  </div>
+  {% endif %}
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

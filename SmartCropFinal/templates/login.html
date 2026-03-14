@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand">🌱 KisanAI</div>
+    <p class="auth-tagline">Smart crop recommendations powered by machine learning — helping small &amp; marginal farmers grow more.</p>
+    <div class="auth-stats">
+      <div class="auth-stat"><div class="num">22+</div><div class="lbl">Crops</div></div>
+      <div class="auth-stat"><div class="num">96%</div><div class="lbl">Accuracy</div></div>
+      <div class="auth-stat"><div class="num">7</div><div class="lbl">Soil Factors</div></div>
+    </div>
+    <div class="auth-features">
+      {% for f in ['🧪 Soil nutrient analysis','🌦️ Real-time weather data','🌾 AI crop prediction','💧 Irrigation advisory','🧴 Fertilizer guidance'] %}
+      <div class="auth-feat"><div class="auth-feat-dot"></div>{{ f }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <h2>Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your farm advisory dashboard</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+        <div class="alert alert-{{ cat }}">{% if cat=='success'%}✅{% elif cat=='danger'%}❌{% else %}ℹ️{% endif %} {{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="icon-wrap">
+            <span class="icon">📧</span>
+            <input type="email" name="email" class="form-control" placeholder="your@email.com" required autocomplete="email">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="flex-between" style="margin-bottom:.35rem">
+            <label class="form-label" style="margin-bottom:0">Password</label>
+            <a href="/forgot-password" style="font-size:.75rem;font-weight:800;color:var(--g3)">Forgot password?</a>
+          </div>
+          <div class="icon-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" id="lpwd" name="password" class="form-control" placeholder="Enter password" required>
+            <button type="button" class="eye-btn" onclick="togglePwd('lpwd','leye')" id="leye">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block btn-pulse" style="margin-top:1.25rem">🌾 Sign In</button>
+      </form>
+      <div class="divider"></div>
+      <p class="text-center text-muted" style="font-size:.88rem">New farmer? <a href="/register" style="font-weight:800;color:var(--g3)">Create free account →</a></p>
+      <p class="text-center mt-1" style="font-size:.78rem"><a href="/admin/login" style="color:var(--earth);font-weight:700">🛡️ Admin Login</a></p>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

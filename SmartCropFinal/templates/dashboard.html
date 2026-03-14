@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/dashboard" class="nav-brand">🌱 KisanAI</a>
+    <ul class="nav-links">
+      <li><a href="/dashboard" class="nav-link active">🏠 Dashboard</a></li>
+      <li><a href="/predict"   class="nav-link">🔬 Predict Crop</a></li>
+      <li><a href="/history"   class="nav-link">📜 History</a></li>
+    </ul>
+    <div class="nav-user">
+      <div class="nav-avatar">{{ farmer_name[0].upper() }}</div>
+      <span>{{ farmer_name }}</span>
+      <a href="/logout" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-left:.25rem">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}
+    <div class="alert alert-{{ cat }} fade-up">{% if cat=='success'%}✅{% elif cat=='danger'%}❌{% else %}ℹ️{% endif %} {{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="page-head fade-up">
+    <h1>Good {{ 'morning' if now().hour < 12 else ('afternoon' if now().hour < 18 else 'evening') }}, {{ farmer_name }} 👋</h1>
+    <p>Your farm intelligence overview for today — {{ now().strftime('%d %B %Y') }}</p>
+  </div>
+
+  <div class="season-banner fade-up d1">{{ season_tip }}</div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card fade-up d1">
+      <div class="stat-icon green">🌾</div>
+      <div class="stat-info"><h3 data-count="{{ total_predictions }}">0</h3><p>Total Predictions</p></div>
+    </div>
+    <div class="stat-card fade-up d2">
+      <div class="stat-icon gold">🌡️</div>
+      <div class="stat-info"><h3>{{ weather.temperature }}°C</h3><p>Temperature</p></div>
+    </div>
+    <div class="stat-card fade-up d3">
+      <div class="stat-icon blue">💧</div>
+      <div class="stat-info"><h3>{{ weather.humidity }}%</h3><p>Humidity</p></div>
+    </div>
+    <div class="stat-card fade-up d4">
+      <div class="stat-icon earth">💨</div>
+      <div class="stat-info"><h3>{{ weather.wind_speed }}</h3><p>Wind m/s</p></div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <!-- Weather -->
+    <div class="fade-up d2">
+      <div class="weather-card">
+        <div class="city-search-wrap">
+          <div class="city-search-box">
+            <input type="text" id="weather_city_input" placeholder="🔍 Search city for weather..."
+                   autocomplete="off" oninput="dashFilterCities(this.value)"
+                   onfocus="dashFilterCities(this.value)" onblur="setTimeout(dashHide,200)">
+            <button class="refresh-btn" id="refresh_weather"
+                    onclick="refreshWeather(document.getElementById('weather_city_input').value)">⟳ Refresh</button>
+          </div>
+          <div class="city-dropdown-weather" id="dash_city_dropdown">
+            <div id="dash_city_list"></div>
+          </div>
+        </div>
+
+        <div class="wc-city" id="wc_city">📍 {{ weather.city }}</div>
+        <div class="wc-main">
+          <div>
+            <div class="wc-temp" id="wc_temp">{{ weather.temperature }}°C</div>
+            <div class="wc-desc" id="wc_desc">{{ weather.description }}</div>
+            <div class="wc-feels" id="wc_feels">Feels {{ weather.feels_like }}°C</div>
+          </div>
+          <img id="wc_icon" src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png"
+               alt="weather" class="wc-icon" onerror="this.style.display='none'">
+        </div>
+        <div class="wc-details">
+          <div class="wc-detail"><div class="val" id="wc_humidity">{{ weather.humidity }}%</div><div class="lbl">Humidity</div></div>
+          <div class="wc-detail"><div class="val" id="wc_wind">{{ weather.wind_speed }} m/s</div><div class="lbl">Wind</div></div>
+          <div class="wc-detail"><div class="val">{{ weather.pressure }}</div><div class="lbl">hPa</div></div>
+        </div>
+        <div class="forecast-label">5-Day Forecast</div>
+        <div class="forecast-strip" id="forecast_strip">
+          {% set ico_map = {'01d':'☀️','01n':'🌙','02d':'⛅','02n':'⛅','03d':'☁️','04d':'☁️','09d':'🌧️','10d':'🌦️','11d':'⛈️','13d':'❄️','50d':'🌫️'} %}
+          {% for d in forecast %}
+          <div class="fc-day">
+            <div class="day">{{ d.day }}</div>
+            <div class="ico">{{ ico_map.get(d.icon,'🌤️') }}</div>
+            <div class="hi">{{ d.temp_max }}°</div>
+            <div class="lo">{{ d.temp_min }}°</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions + Tips -->
+    <div class="fade-up d3">
+      <div class="section-title">⚡ Quick Actions</div>
+      <div style="display:grid;gap:1rem;margin-bottom:1.75rem">
+        <a href="/predict" class="card" style="display:flex;align-items:center;gap:1rem;padding:1.25rem;border-left:4px solid var(--g5)">
+          <div style="font-size:2rem">🔬</div>
+          <div><div style="font-weight:800;font-size:.92rem">Get Crop Recommendation</div><div style="font-size:.78rem;color:var(--text3)">Enter soil data → AI predicts best crop</div></div>
+          <div style="margin-left:auto;color:var(--text3);font-size:1.1rem">→</div>
+        </a>
+        <a href="/history" class="card" style="display:flex;align-items:center;gap:1rem;padding:1.25rem;border-left:4px solid var(--gold)">
+          <div style="font-size:2rem">📜</div>
+          <div><div style="font-weight:800;font-size:.92rem">View Prediction History</div><div style="font-size:.78rem;color:var(--text3)">{{ total_predictions }} prediction(s) saved</div></div>
+          <div style="margin-left:auto;color:var(--text3);font-size:1.1rem">→</div>
+        </a>
+      </div>
+
+      <div class="section-title">💡 Farming Tips</div>
+      <div style="display:grid;gap:.75rem">
+        <div class="tip-card"><div class="tip-ico">🧪</div><div><div class="tip-title">Soil Testing</div><div class="tip-text">Test your soil every 2-3 years. Local Krishi Vigyan Kendra provides free testing.</div></div></div>
+        <div class="tip-card"><div class="tip-ico">💧</div><div><div class="tip-title">Water Management</div><div class="tip-text">Drip irrigation saves 30-50% water while maintaining or improving crop yields.</div></div></div>
+        <div class="tip-card"><div class="tip-ico">🌿</div><div><div class="tip-title">Crop Rotation</div><div class="tip-text">Rotate legumes and cereals to naturally replenish soil nitrogen levels each season.</div></div></div>
+      </div>
+    </div>
+
+    <!-- Recent Predictions -->
+    <div class="col-full fade-up d4">
+      <div class="card">
+        <div class="card-head">
+          <h3>📈 Recent Predictions</h3>
+          <a href="/predict" class="btn btn-primary btn-sm">+ New Prediction</a>
+        </div>
+        {% if predictions %}
+        <div style="overflow-x:auto">
+          <table class="hist-table">
+            <thead><tr>
+              <th>Crop</th><th>N-P-K</th><th>pH</th><th>Rainfall</th><th>Temp</th><th>Confidence</th><th>Date</th>
+            </tr></thead>
+            <tbody>
+              {% for p in predictions %}
+              <tr>
+                <td><span class="crop-pill">{{ CROP_INFO.get(p.predicted_crop,{}).get('emoji','🌿') }} {{ p.predicted_crop }}</span></td>
+                <td style="font-weight:700;font-size:.82rem">{{ p.nitrogen|int }}-{{ p.phosphorus|int }}-{{ p.potassium|int }}</td>
+                <td>{{ p.ph }}</td>
+                <td>{{ p.rainfall }} mm</td>
+                <td>{{ p.temperature }}°C</td>
+                <td><span class="badge badge-green">{{ p.confidence }}%</span></td>
+                <td class="text-muted" style="font-size:.78rem;white-space:nowrap">{{ p.predicted_at[:10] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="ico">🌱</div>
+          <h3>No predictions yet</h3>
+          <p>Enter your soil data to get your first crop recommendation!</p>
+          <a href="/predict" class="btn btn-primary" style="margin-top:1rem">Get Started</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand">🌱 KisanAI</div>
+    <p class="auth-tagline">Join farmers using AI-powered soil analysis to make smarter crop choices every season.</p>
+    <div class="auth-stats">
+      <div class="auth-stat"><div class="num">Free</div><div class="lbl">Always</div></div>
+      <div class="auth-stat"><div class="num">ML</div><div class="lbl">Powered</div></div>
+      <div class="auth-stat"><div class="num">Live</div><div class="lbl">Weather</div></div>
+    </div>
+    <div class="auth-features">
+      {% for f in ['🧪 Enter soil N, P, K values','🌦️ Auto weather fetch','🌾 Best crop prediction','💧 Irrigation schedule','🧴 Fertilizer dosage'] %}
+      <div class="auth-feat"><div class="auth-feat-dot"></div>{{ f }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="auth-right" style="padding:2rem">
+    <div class="auth-box" style="max-width:460px">
+      <h2>Create Account</h2>
+      <p class="auth-subtitle">Register to start getting AI-powered crop recommendations</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+        <div class="alert alert-{{ cat }}">{% if cat=='success'%}✅{% elif cat=='danger'%}❌{% else %}ℹ️{% endif %} {{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="POST">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Full Name *</label>
+            <div class="icon-wrap"><span class="icon">👤</span>
+              <input type="text" name="name" class="form-control" placeholder="Ramesh Kumar" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Phone</label>
+            <div class="icon-wrap"><span class="icon">📱</span>
+              <input type="tel" name="phone" class="form-control" placeholder="9876543210">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <div class="icon-wrap"><span class="icon">📧</span>
+            <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password * <span style="font-size:.72rem;color:var(--text3);font-weight:600">(min 6 chars)</span></label>
+          <div class="icon-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" id="rpwd" name="password" class="form-control" placeholder="Min 6 characters" required minlength="6" oninput="checkStrength(this.value)">
+            <button type="button" class="eye-btn" onclick="togglePwd('rpwd','reye')" id="reye">👁️</button>
+          </div>
+          <div class="pwd-strength-track"><div class="pwd-strength-fill" id="strength_bar"></div></div>
+          <div class="pwd-strength-label" id="strength_label"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Village / City</label>
+            <div class="icon-wrap"><span class="icon">📍</span>
+              <input type="text" name="location" class="form-control" placeholder="Chennai, Pune...">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Land Area (acres)</label>
+            <div class="icon-wrap"><span class="icon">🌍</span>
+              <input type="number" name="land_area" class="form-control" placeholder="2.5" step="0.1" min="0">
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:.5rem">🌱 Register as Farmer</button>
+      </form>
+      <div class="divider"></div>
+      <p class="text-center text-muted" style="font-size:.88rem">Already registered? <a href="/login" style="font-weight:800;color:var(--g3)">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Result: {{ predicted_crop|title }} — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <style>@media print{.navbar,.no-print{display:none}.result-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
+</head>
+<body>
+<nav class="navbar no-print">
+  <div class="nav-inner">
+    <a href="/dashboard" class="nav-brand">🌱 KisanAI</a>
+    <ul class="nav-links">
+      <li><a href="/dashboard" class="nav-link">🏠 Dashboard</a></li>
+      <li><a href="/predict"   class="nav-link">🔬 Predict Crop</a></li>
+      <li><a href="/history"   class="nav-link">📜 History</a></li>
+    </ul>
+    <div class="nav-user">
+      <a href="/logout" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff">Logout</a>
+    </div>
+  </div>
+</nav>
+<div class="page">
+  <div class="flex-between mb-2 no-print">
+    <a href="/predict" class="btn btn-outline">← New Prediction</a>
+    <div style="display:flex;gap:.5rem">
+      <button onclick="printResult()" class="btn btn-outline">🖨️ Print</button>
+      <a href="/history" class="btn btn-ghost">📜 History</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="result-hero fade-up">
+    <span class="result-emoji">{{ crop_details.emoji }}</span>
+    <div class="result-name">{{ predicted_crop|title }}</div>
+    <div class="conf-badge">✅ {{ confidence }}% Confidence</div>
+    <div class="result-meta">
+      📍 {{ location or 'Your Location' }} &nbsp;•&nbsp;
+      🌡️ {{ inputs.temperature }}°C &nbsp;•&nbsp;
+      💧 {{ inputs.humidity }}% Humidity
+    </div>
+    <div class="result-meta" style="margin-top:.4rem">
+      📅 Season: {{ crop_details.season }} &nbsp;•&nbsp;
+      ⏱️ {{ crop_details.duration }} &nbsp;•&nbsp;
+      💰 {{ crop_details.market_price }}
+    </div>
+  </div>
+
+  <!-- Top 3 Crops -->
+  <div class="card fade-up d1 mb-3">
+    <div class="card-head"><h3>🏆 Top Crop Recommendations</h3><span class="badge badge-green">AI Ranked</span></div>
+    <div class="card-body">
+      {% for crop,prob in top3_crops %}
+      <div class="top-crop">
+        <div class="top-crop-label">
+          <span class="crop-name">
+            {% if loop.index==1 %}🥇{% elif loop.index==2 %}🥈{% else %}🥉{% endif %}
+            {{ crop|title }}
+            {% if loop.index==1 %}<span class="badge badge-green" style="margin-left:.4rem">Best Match</span>{% endif %}
+          </span>
+          <span style="font-weight:800;color:var(--g3)">{{ prob }}%</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill {% if loop.index==2 %}gold-fill{% elif loop.index==3 %}earth-fill{% endif %}"
+               data-width="{{ prob }}" style="width:0%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Info Grid -->
+  <div class="info-grid fade-up d2">
+    <div class="info-card gold">
+      <h4>🧴 Fertilizer Recommendation</h4>
+      <p>{{ crop_details.fertilizer }}</p>
+    </div>
+    <div class="info-card blue">
+      <h4>💧 Irrigation Advisory</h4>
+      <p>{{ crop_details.irrigation }}</p>
+    </div>
+    <div class="info-card">
+      <h4>🧪 Your Soil Data</h4>
+      <div class="data-mini-grid">
+        {% for lbl,val,unit in [('Nitrogen (N)',inputs.nitrogen,'kg/ha'),('Phosphorus (P)',inputs.phosphorus,'kg/ha'),('Potassium (K)',inputs.potassium,'kg/ha'),('Soil pH',inputs.ph,''),('Rainfall',inputs.rainfall,'mm')] %}
+        <div class="data-mini">
+          <div class="lbl">{{ lbl }}</div>
+          <div class="val">{{ val }} <span style="font-size:.7rem;color:var(--text3);font-weight:600">{{ unit }}</span></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="info-card earth">
+      <h4>🌦️ Weather Data Used</h4>
+      <div class="data-mini-grid">
+        {% for lbl,val,unit in [('Temperature',inputs.temperature,'°C'),('Humidity',inputs.humidity,'%'),('Wind Speed',weather.wind_speed,'m/s'),('Condition',weather.description,'')] %}
+        <div class="data-mini">
+          <div class="lbl">{{ lbl }}</div>
+          <div class="val" style="color:var(--earth);font-size:.88rem">{{ val }} <span style="font-size:.7rem;color:var(--text3)">{{ unit }}</span></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Economics -->
+  <div class="card fade-up d3 mb-3">
+    <div class="card-head"><h3>📈 Crop Economics</h3></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center">
+        {% for ico,val,lbl in [('💰',crop_details.market_price,'Market Price'),('📅',crop_details.season,'Best Season'),('⏱️',crop_details.duration,'Crop Duration')] %}
+        <div>
+          <div style="font-size:1.6rem;margin-bottom:.3rem">{{ ico }}</div>
+          <div style="font-weight:800;color:var(--g2);font-size:.95rem">{{ val }}</div>
+          <div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem">{{ lbl }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center no-print" style="margin-top:1.5rem;padding:1rem">
+    <a href="/predict" class="btn btn-primary btn-lg">🔬 New Prediction</a>
+    <a href="/dashboard" class="btn btn-outline btn-lg" style="margin-left:1rem">🏠 Dashboard</a>
+  </div>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>

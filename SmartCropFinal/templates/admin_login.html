@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Login — KisanAI</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body style="background:var(--g2);min-height:100vh;display:flex;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:var(--r4);padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--sh3)">
+  <div class="text-center mb-3">
+    <div style="font-size:2.75rem;margin-bottom:.5rem">🛡️</div>
+    <h2 style="color:var(--g2);font-size:1.85rem">Admin Panel</h2>
+    <p style="color:var(--text3);font-size:.85rem">Smart Crop Advisory System</p>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <form method="POST">
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <div class="icon-wrap"><span class="icon">👤</span>
+        <input type="text" name="username" class="form-control" placeholder="admin" required value="admin">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="icon-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="apwd" name="password" class="form-control" placeholder="admin123" required>
+        <button type="button" class="eye-btn" onclick="togglePwd('apwd','aeye')" id="aeye">👁️</button>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:1rem">🔐 Admin Login</button>
+  </form>
+  <p class="text-center mt-2" style="font-size:.78rem;color:var(--text3)">Default: admin / admin123</p>
+  <div class="divider"></div>
+  <p class="text-center" style="font-size:.85rem"><a href="/login" style="color:var(--g3);font-weight:700">← Farmer Login</a></p>
+</div>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body></html>
